@@ -1,0 +1,35 @@
+on:
+  push:
+    branches:
+      - local-branch
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Determine Deployment Channel
+        id: determine_channel
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/local-branch" ]]; then
+            echo "channel_id=test" >> $GITHUB_ENV
+          else
+            echo "channel_id=live" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RISKLESS_CAPSTONE }}
+          channelId: ${{ env.channel_id }}
+          projectId: riskless-capstone
