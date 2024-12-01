@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ASSETS } from "../../../config/assetConfig";
+import { ChatBotFab } from "../../../components/fab/ChatBotFab";
 // import useProduct from "../../../hooks/useProduct";
 
 const HomePage = () => {
@@ -86,6 +87,7 @@ const HomePage = () => {
           </div>
         </div>
       </div>
+      <ChatBotFab />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { useOrders } from "../../../hooks/useOrders";
 import { useFranchise } from "../../../hooks/useFranchise";
 import { useProduct } from "../../../hooks/useProduct";
 import { Card, Row, Col, Statistic, List, Typography } from "antd";
+import { ChatBotFab } from "../../../components/fab/ChatBotFab";
 
 const { Title } = Typography;
 
@@ -122,6 +123,7 @@ const DashboardPage: React.FC = () => {
           )}
         />
       </div>
+      <ChatBotFab />
     </div>
   );
 };

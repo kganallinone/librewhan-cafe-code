@@ -1,6 +1,7 @@
 import { Form, Input, InputNumber, Button } from "antd";
 import { FaEnvelope, FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
 import { useFranchise } from "../../../hooks/useFranchise";
+import { ChatBotFab } from "../../../components/fab/ChatBotFab";
 
 const StoresPage = () => {
   const { createFranchise } = useFranchise();
@@ -198,6 +199,7 @@ const StoresPage = () => {
           </Form>
         </div>
       </section>
+      <ChatBotFab />
     </div>
   );
 };

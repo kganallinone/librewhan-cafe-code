@@ -1,3 +1,5 @@
+import { ChatBotFab } from "../../../components/fab/ChatBotFab";
+
 const AboutPage = () => {
   return (
     <div className="container mx-auto px-6 py-12">
@@ -83,6 +85,7 @@ const AboutPage = () => {
           </div>
         </div>
       </section>
+      <ChatBotFab />
     </div>
   );
 };
