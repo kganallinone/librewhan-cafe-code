@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Chat as Model } from "./../../../model/chatModel";
+import { chatService } from "../../../api/services/realtimefdb/chatService";
 
-interface BotData {
-  question: string;
-  answer: string;
-}
-
-const botData: BotData[] = [
+// Bot Data for fallback
+const botData = [
   {
     question: "How can I franchise a Librewhan Cafe?",
     answer:
@@ -38,43 +36,91 @@ export const ChatBotFab: React.FC = () => {
   const [chatHistory, setChatHistory] = useState<
     { type: "bot" | "user"; message: string }[]
   >([]);
-  const [showQuestions, setShowQuestions] = useState(true);
-
+  const [message, setMessage] = useState("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [userIp, setUserIp] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(true);
+
+  const sanitizePath = (ip: string) => ip.replace(/\./g, "_");
+  const sanitizedIP = sanitizePath(userIp);
+  const messagePath = `chat/${sanitizedIP}`;
+
+  useEffect(() => {
+    fetch("https://api.ipify.org?format=json")
+      .then((res) => res.json())
+      .then((data) => setUserIp(data.ip));
+  }, []);
+
+  useEffect(() => {
+    chatService(messagePath)
+      .getAll()
+      .then((chats) => {
+        const filteredChats = chats.filter(
+          (chat) => chat.sender === userIp || chat.sender === "bot"
+        );
+        const sortedChats = filteredChats.sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        const formattedChats = sortedChats.map((chat) => ({
+          type: chat.sender === "bot" ? ("bot" as const) : ("user" as const),
+          message: chat.message,
+        }));
+        setChatHistory(formattedChats);
+      });
+  }, [userIp, messagePath]);
 
   const toggleChatBot = () => {
     setIsOpen((prev) => !prev);
     if (!isOpen) {
-      // Reset chat when opening
       setChatHistory([
-        {
-          type: "bot",
-          message: "Hello! How can I help you today? Please choose a question.",
-        },
+        { type: "bot", message: "Hello! How can I help you today?" },
       ]);
-      setShowQuestions(true);
     }
   };
 
-  const handleQuestionClick = (question: string, answer: string) => {
-    setChatHistory((prev) => [
-      ...prev,
-      { type: "user", message: question },
-      { type: "bot", message: answer },
-      {
-        type: "bot",
-        message:
-          "Do you have more questions? Choose one below or close the chat.",
-      },
-    ]);
-    setShowQuestions(true);
+  const handleSendMessage = () => {
+    if (message.trim() && userIp) {
+      const newMessage: Model = {
+        id: Date.now(),
+        message,
+        sender: userIp,
+        date: new Date().toISOString(),
+      };
+      chatService(messagePath).create(newMessage);
+      setChatHistory((prev) => [...prev, { type: "user", message }]);
+      setMessage("");
+
+      const botResponse = botData.find((item) =>
+        message.toLowerCase().includes(item.question.toLowerCase())
+      );
+
+      if (botResponse) {
+        setTimeout(() => {
+          const botMessage: Model = {
+            id: Date.now() + 1,
+            message: botResponse.answer,
+            sender: "bot",
+            date: new Date().toISOString(),
+          };
+          chatService(messagePath).create(botMessage);
+          setChatHistory((prev) => [
+            ...prev,
+            { type: "bot", message: botResponse.answer },
+          ]);
+        }, 1000);
+      }
+    }
   };
 
   useEffect(() => {
-    // Scroll to the bottom of the chat container when chatHistory updates
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
+    const container = chatContainerRef.current;
+    if (container) {
+      const shouldScroll =
+        container.scrollTop + container.clientHeight >=
+        container.scrollHeight - 10;
+      if (shouldScroll) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [chatHistory]);
 
@@ -108,25 +154,47 @@ export const ChatBotFab: React.FC = () => {
               </div>
             ))}
           </div>
-          {showQuestions && (
-            <div className="mt-4">
-              <p className="text-sm font-semibold mb-2">Choose a question:</p>
-              <ul className="space-y-2">
-                {botData.map((item, index) => (
-                  <li key={index}>
+          <div className="mt-2">
+            <button
+              onClick={() => setShowSuggestions((prev) => !prev)}
+              className="bg-gray-100 hover:bg-gray-300 text-sm px-2 py-1 rounded mb-2"
+            >
+              {showSuggestions ? "Hide" : "Show"} Suggested Questions
+            </button>
+            {showSuggestions && (
+              <>
+                <p className="text-sm text-gray-600 mb-2">
+                  Suggested questions:
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {botData.map((item, index) => (
                     <button
-                      onClick={() =>
-                        handleQuestionClick(item.question, item.answer)
-                      }
-                      className="block text-left text-xs w-full bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg"
+                      key={index}
+                      className="bg-gray-100 hover:bg-gray-300 text-sm px-2 py-1 rounded"
+                      onClick={() => setMessage(item.question)}
                     >
                       {item.question}
                     </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+          <div className="mt-4 flex">
+            <input
+              type="text"
+              className="flex-1 border border-gray-300 rounded-l-lg px-2 py-1"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type your message..."
+            />
+            <button
+              onClick={handleSendMessage}
+              className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-1 rounded-r-lg"
+            >
+              Send
+            </button>
+          </div>
         </div>
       )}
     </div>

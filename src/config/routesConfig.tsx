@@ -1,6 +1,7 @@
 import AdminLayout from "../app/layouts/Adminlayout";
 import AdminLayoutWithSidebar from "../app/layouts/AdminLayoutwithSidebar";
 import WebLayout from "../app/layouts/WebLayout";
+import { ChatPage } from "../app/pages/protected/chat/ChatPage";
 import FranchiseAdminPage from "../app/pages/protected/franchise/FranchiseAdminPage";
 import DashboardPage from "../app/pages/protected/home/DashboardPage";
 import { OrderAdminPage } from "../app/pages/protected/orders/OrderAdminPage";
@@ -104,6 +105,10 @@ export const ROUTES = {
         {
           path: "/admin/profile",
           element: <ProfilePage />,
+        },
+        {
+          path: "/admin/chat",
+          element: <ChatPage />,
         },
       ],
     },

@@ -21,8 +21,9 @@ export const REG = {
   FIREBASE_CONFIG: {
     apiKey: "AIzaSyByVHVJm80xP6XRZ-nfY9CBQIyBAnqRG6k",
     authDomain: "librewhan-cafe.firebaseapp.com",
+    databaseURL: "https://librewhan-cafe-default-rtdb.firebaseio.com",
     projectId: "librewhan-cafe",
-    storageBucket: "librewhan-cafe.appspot.com",
+    storageBucket: "librewhan-cafe.firebasestorage.app",
     messagingSenderId: "486778870469",
     appId: "1:486778870469:web:f2e81a9f53bc09e180aeac",
     measurementId: "G-TNECGGNQVH",
